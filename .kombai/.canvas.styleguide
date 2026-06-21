@@ -1,0 +1,81 @@
+{
+  "guides": [
+    {
+      "name": "netflix-inspiration",
+      "tokens": {
+        "colors": {
+          "primary": "#E50914",
+          "primary-hover": "#F6121D",
+          "on-primary": "#FFFFFF",
+          "surface": "#000000",
+          "surface-raised": "#1A1A1A",
+          "surface-accordion": "#2D2D2D",
+          "card-gradient-start": "#1A2A4A",
+          "card-gradient-end": "#3B1F47",
+          "on-surface": "#FFFFFF",
+          "on-surface-secondary": "#B3B3B3",
+          "on-surface-disabled": "#808080",
+          "hairline": "#333333",
+          "hairline-red": "#B9090B"
+        },
+        "typography": {
+          "display": {
+            "family": "\"Netflix Sans\", \"Helvetica Neue\", Inter, Arial, sans-serif",
+            "size": "56px",
+            "url": ""
+          },
+          "headline-lg": {
+            "family": "\"Netflix Sans\", \"Helvetica Neue\", Inter, sans-serif",
+            "size": "40px",
+            "url": ""
+          },
+          "headline-md": {
+            "family": "\"Netflix Sans\", \"Helvetica Neue\", Inter, sans-serif",
+            "size": "28px",
+            "url": ""
+          },
+          "body-lg": {
+            "family": "\"Netflix Sans\", \"Helvetica Neue\", Inter, sans-serif",
+            "size": "20px",
+            "url": ""
+          },
+          "body-md": {
+            "family": "\"Netflix Sans\", \"Helvetica Neue\", Inter, sans-serif",
+            "size": "16px",
+            "url": ""
+          },
+          "label": {
+            "family": "\"Netflix Sans\", \"Helvetica Neue\", Inter, sans-serif",
+            "size": "18px",
+            "url": ""
+          },
+          "caption": {
+            "family": "\"Netflix Sans\", \"Helvetica Neue\", Inter, sans-serif",
+            "size": "13px",
+            "url": ""
+          }
+        },
+        "spacing": {
+          "xxs": "4px",
+          "xs": "8px",
+          "sm": "12px",
+          "md": "16px",
+          "lg": "24px",
+          "xl": "32px",
+          "xxl": "48px",
+          "xxxl": "64px"
+        },
+        "radius": {
+          "xs": "4px",
+          "sm": "8px",
+          "md": "12px",
+          "none": "0px"
+        }
+      },
+      "designInstructions": "## Token Instructions\n\n- `primary` (Netflix Red) → logo and the single primary \"Get Started\" CTA only; never links, borders, or section accents\n- `primary-hover` → hover state for the red CTA\n- `surface` (#000000) → pure-black, dark-only canvas\n- `surface-raised` → inputs and subtle wells\n- `surface-accordion` → FAQ rows\n- `card-gradient-start` → `card-gradient-end` → navy→plum feature-card gradient that breaks the black\n- `hairline-red` → the glowing red hairline arcing under the hero collage\n- `radius.xs` (4px) → buttons and inputs (keep nearly square, no pills)\n- `radius.sm` (8px) → poster tiles and cards\n- `radius.none` → FAQ rows\n- icons → outline UI glyphs inherit white; feature-card illustrations use red/pink/purple gradients\n\n\n# Netflix\n\n> Design spec — version alpha. Surfaces studied via Playwright: signed-out homepage (IN locale) — full-page screenshots + representative element probes. Brand values reconciled with Netflix's well-known identity.\n\n## Overview\n\nNetflix is the canonical **black-canvas, one-red-voltage** brand. The page sits on pure `{colors.surface}` `#000000`, with a single accent — **Netflix Red** `{colors.primary}` `#E50914` — rationed to exactly two jobs: the **wordmark logo** and the **primary \"Get Started\" CTA**. Everything else is white type on black. The hero is a **dimmed full-bleed collage of title posters** with a confident bold headline, and a **signature red hairline arc** glowing beneath it (`{colors.hairline-red}`) — the one decorative flourish.\n\nType is **Netflix Sans**, bold for headlines and medium for controls. The layout primitive is the **ranked poster grid** (\"Trending Now\" with giant outlined rank numerals overlapping each tile), followed by **feature cards** that swap pure black for rich **navy→plum gradients** (`{colors.card-gradient-start}` → `{colors.card-gradient-end}`) and playful glossy 3D icons. The FAQ is a **dark accordion** of `#2D2D2D` rows toggled by a plus icon. Shapes are nearly square — Netflix uses tiny 4px radii on buttons and inputs, reading as crisp and broadcast-like.\n\n## Colors\n\n**Brand.** Netflix Red `{colors.primary}` `#E50914` is the entire identity. Scarcity rule: red is the **logo and the primary CTA only** — never body links, never borders, never section accents. Hover lifts to `{colors.primary-hover}` `#F6121D`.\n\n**Surfaces.** Canvas pure black `{colors.surface}` `#000000`; inputs and subtle wells `{colors.surface-raised}` `#1A1A1A`; FAQ rows `{colors.surface-accordion}` `#2D2D2D`. Feature cards break the black with a **navy→plum gradient** (`#1A2A4A` → `#3B1F47`).\n\n**Text.** White `{colors.on-surface}` `#FFFFFF` for headings and primary copy; `{colors.on-surface-secondary}` `#B3B3B3` for captions, footer links, and fine print; disabled `#808080`.\n\n**Hairlines.** Input borders and dividers use `{colors.hairline}` `#333333`; the hero's glowing under-arc uses `{colors.hairline-red}` `#B9090B`.\n\n## Typography\n\nFamily: **Netflix Sans** → `\"Helvetica Neue\", Inter, Arial, sans-serif`. Closest open-source substitute: **Inter** or **Helvetica Now** (Netflix Sans is a bespoke Helvetica-lineage grotesque). Weight strategy: 700 for hero/section headlines, 500 for FAQ questions, card titles, and button labels, 400 for body. Tracking is roughly normal (slightly negative on the big hero).\n\n| Token       | Size | Weight | Usage                                    |\n| ----------- | ---- | ------ | ---------------------------------------- |\n| display     | 56px | 700    | Hero (\"Unlimited movies, shows, and more\")|\n| headline-lg | 40px | 700    | Section headers (\"Trending Now\")          |\n| headline-md | 28px | 500    | FAQ questions, card titles                |\n| body-lg     | 20px | 400    | Hero subhead                              |\n| body-md     | 16px | 400    | Default body                              |\n| label       | 18px | 500    | Buttons                                   |\n| caption     | 13px | 400    | Fine print, legal                         |\n\n## Layout\n\nBase unit **8px**, `xxxl` 64px section rhythm. The hero is full-bleed (poster collage, dark overlay, centered headline + email-capture row). Below: a horizontally-scrollable **ranked poster carousel** (5 tiles with overlapping outline numerals), a **2×2 grid of gradient feature cards**, and a stacked **FAQ accordion**. The email-capture row repeats before the footer. Content centers to ~1100px with a dark, cinematic feel throughout.\n\n## Elevation & Depth\n\nBlack-on-black with **gradient cards** doing the depth work. There's no shadow ladder; instead, the navy→plum feature-card gradients and the red hero arc create dimension against the flat black. Poster tiles read as photos directly on black. The only \"glow\" is the red arc and the glossy feature icons.\n\n## Shapes\n\nNetflix is **nearly square**: `{rounded.xs}` 4px on buttons and inputs, `{rounded.sm}` 8px on poster tiles and cards, `{rounded.none}` on FAQ rows. The geometry is crisp and broadcast-grade — no pills, no large radii.\n\n## Components\n\n- **button-primary** — Netflix Red `#E50914`, white 500 label, 4px radius, trailing chevron (\"Get Started ›\").\n- **button-secondary** — translucent black with a 50% white border (the signed-in/\"Sign In\" style).\n- **email-input** — translucent dark `rgba(22,22,22,0.7)`, 1px `#333` border, 4px radius.\n- **poster-tile** — 8px-radius poster with a large outlined **rank numeral** overlapping its left edge.\n- **feature-card** — navy→plum gradient, white text, 8px radius, with a glossy red/pink/purple 3D icon (\"Enjoy on your TV\", \"Download your shows…\").\n- **faq-row** — `#2D2D2D` full-width row, white text, square corners, plus→close toggle.\n- **hero-arc** — the red glowing hairline arcing beneath the hero collage.\n\n## Motion\n\nQuick and broadcast-clean: `{motion.duration-fast}` 150ms hovers, `{motion.duration-standard}` 250ms for accordion expand and carousel scroll, standard ease. FAQ rows expand smoothly; poster carousels slide. No parallax or decorative scroll spectacle — the imagery is the show.\n\n## Iconography\n\nUI chrome uses simple **outline** glyphs (Lucide as substitute), white, 2px stroke. **Feature-card icons are bespoke glossy 3D illustrations** in red/pink/purple gradients — the one place illustration gets colorful and dimensional. The FAQ toggle is a plain plus that rotates to a close.\n\n## Do's and Don'ts\n\n- **Do** keep the canvas pure black — Netflix is dark-only.\n- **Do** reserve **Netflix Red** for the logo and exactly one primary CTA per viewport.\n- **Do** keep radii tiny (4px buttons/inputs) — Netflix is crisp, not pill-shaped.\n- **Do** use the **navy→plum gradient** for feature cards to break the black.\n- **Do** render ranked posters with large overlapping outline numerals.\n- **Don't** use red for links, borders, or section accents.\n- **Don't** introduce a second brand color — there's one voltage, and it's red.\n- **Don't** round things into pills or add soft drop-shadow elevation.\n\n## Known Gaps\n\n- Black canvas, Netflix Red CTA/logo, near-square radii, ranked poster grid, navy→plum feature cards, dark FAQ accordion, and the red hero arc were observed directly from full-page captures. The exact card-gradient stops (`#1A2A4A`→`#3B1F47`) and arc red (`#B9090B`) are eyeballed and approximate; `#E50914` (Netflix Red), `#000000`, `#B3B3B3`, and `#2D2D2D` are authoritative.\n- `Inter`/`Helvetica Neue` stand in for the proprietary **Netflix Sans**.\n- Signed-in surfaces (browse, player, profile gate) were not studied; tokens describe the signed-out marketing/home experience.\n",
+      "id": "style_1e02abbadc4d",
+      "created": "2026-06-20T09:31:48.486Z",
+      "modified": "2026-06-20T09:31:48.486Z"
+    }
+  ]
+}

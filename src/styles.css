@@ -1,0 +1,376 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-ink: var(--ink);
+  --font-display: var(--font-oswald), "Oswald", "Inter", sans-serif;
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.375rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --primary: oklch(0.15 0 0);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.96 0 0);
+  --secondary-foreground: oklch(0.15 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.78 0.14 75);
+  --accent-foreground: oklch(0.15 0 0);
+  --destructive: oklch(0.6 0.22 27);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.9 0 0);
+  --input: oklch(0.9 0 0);
+  --ring: oklch(0.78 0.14 75);
+  --gold: oklch(0.78 0.14 75);
+  --gold-foreground: oklch(0.15 0 0);
+  --ink: oklch(0.13 0 0);
+
+  /* Extended palette for gradients / glass / glow */
+  --gold-light: oklch(0.87 0.12 82);
+  --gold-deep: oklch(0.66 0.15 58);
+  --ink-soft: oklch(0.18 0.01 60);
+  --ink-deep: oklch(0.1 0.005 60);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  ::selection {
+    background: var(--gold);
+    color: var(--ink);
+  }
+}
+
+/* ============================================================
+   Northline — design utilities (glass, gradients, glow, motion)
+   ============================================================ */
+
+/* Gold gradient text */
+.text-gradient-gold {
+  background-image: linear-gradient(
+    110deg,
+    var(--gold-light),
+    var(--gold) 45%,
+    var(--gold-deep)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Glass surfaces — read best over imagery / dark gradients */
+.glass {
+  background: color-mix(in oklab, white 7%, transparent);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid color-mix(in oklab, white 14%, transparent);
+}
+.glass-strong {
+  background: color-mix(in oklab, var(--ink) 55%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid color-mix(in oklab, white 12%, transparent);
+}
+.glass-light {
+  background: color-mix(in oklab, white 70%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--ink) 8%, transparent);
+}
+.glass-gold {
+  background: color-mix(in oklab, var(--gold) 16%, transparent);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid color-mix(in oklab, var(--gold) 35%, transparent);
+}
+
+/* Gradient backgrounds for dark sections */
+.bg-ink-gradient {
+  background:
+    radial-gradient(
+      900px 500px at 85% -10%,
+      color-mix(in oklab, var(--gold) 18%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      700px 600px at 0% 110%,
+      color-mix(in oklab, var(--gold) 9%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(180deg, var(--ink-deep), var(--ink-soft));
+}
+.bg-gold-gradient {
+  background: linear-gradient(
+    115deg,
+    var(--gold-light),
+    var(--gold) 50%,
+    var(--gold-deep)
+  );
+}
+
+/* Subtle blueprint grid overlay */
+.grid-pattern {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, white 6%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, white 6%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 30%,
+    black,
+    transparent 75%
+  );
+  mask-image: radial-gradient(circle at 50% 30%, black, transparent 75%);
+}
+
+/* Glow helpers */
+.glow-gold {
+  box-shadow: 0 18px 50px -18px
+    color-mix(in oklab, var(--gold) 70%, transparent);
+}
+.glow-soft {
+  box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.55);
+}
+
+/* Gradient hairline divider */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--gold) 60%, transparent),
+    transparent
+  );
+}
+
+/* Animated keyframes */
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: -150% 0;
+  }
+  100% {
+    background-position: 150% 0;
+  }
+}
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes gradient-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-float {
+  animation: float-y 6s ease-in-out infinite;
+}
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* Shimmer sweep used on primary buttons */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    color-mix(in oklab, white 55%, transparent) 50%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  transform: translateX(-100%);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+.btn-shimmer:hover::after {
+  transform: translateX(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-pulse-glow {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Rendered markdown for the admin manual */
+.admin-doc {
+  color: var(--foreground);
+  font-size: 0.925rem;
+  line-height: 1.7;
+}
+.admin-doc > :first-child {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+.admin-doc h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 1.75rem 0 0.75rem;
+}
+.admin-doc h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 2rem 0 0.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.admin-doc h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.4rem;
+}
+.admin-doc p {
+  margin: 0.65rem 0;
+}
+.admin-doc ul,
+.admin-doc ol {
+  margin: 0.65rem 0;
+  padding-left: 1.4rem;
+}
+.admin-doc ul {
+  list-style: disc;
+}
+.admin-doc ol {
+  list-style: decimal;
+}
+.admin-doc li {
+  margin: 0.3rem 0;
+}
+.admin-doc a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.admin-doc strong {
+  font-weight: 700;
+  color: var(--foreground);
+}
+.admin-doc blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid var(--gold);
+  background: var(--secondary);
+  padding: 0.75rem 1rem;
+  border-radius: 0 0.4rem 0.4rem 0;
+  color: var(--muted-foreground);
+}
+.admin-doc blockquote p {
+  margin: 0.25rem 0;
+}
+.admin-doc code {
+  background: var(--secondary);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.admin-doc hr {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+.admin-doc table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+.admin-doc th,
+.admin-doc td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+.admin-doc th {
+  background: var(--secondary);
+  font-weight: 700;
+}
