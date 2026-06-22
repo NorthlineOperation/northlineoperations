@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { getLandingPageContent } from "@/lib/cms/landing-page";
 import { LEGAL_NAME, SITE_NAME } from "@/lib/seo/site";
+import brandLogo from "../../../docs/logo.png";
 
 export const dynamic = "force-dynamic";
 
@@ -26,12 +28,17 @@ export default async function PrivacyPage() {
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-6 sm:px-8">
           <Link
             href="/"
-            className="font-display text-lg font-bold tracking-wide"
+            aria-label="Northline Operation home"
+            className="relative block h-12 w-32 shrink-0 overflow-hidden rounded-md ring-1 ring-white/10 sm:h-14 sm:w-36"
           >
-            NORTHLINE
-            <span className="ml-2 text-xs tracking-[0.3em] text-gold">
-              OPERATION
-            </span>
+            <Image
+              src={brandLogo}
+              alt="Northline Operation"
+              fill
+              priority
+              sizes="(min-width: 640px) 144px, 128px"
+              className="object-cover object-[center_57%]"
+            />
           </Link>
           <Link
             href="/"
@@ -154,9 +161,9 @@ export default async function PrivacyPage() {
           <strong>Residents of other states.</strong> If you reside in a state
           with a comprehensive consumer privacy law (such as California,
           Colorado, Virginia, Connecticut, or Utah), you may have additional
-          rights regarding your personal information, including rights to access,
-          delete, correct, and opt out of certain processing. We do not sell
-          personal information or use it for cross-context behavioral
+          rights regarding your personal information, including rights to
+          access, delete, correct, and opt out of certain processing. We do not
+          sell personal information or use it for cross-context behavioral
           advertising. Contact us to exercise any rights available to you, and
           we will not discriminate against you for doing so.
         </P>
@@ -195,10 +202,10 @@ export default async function PrivacyPage() {
         <H2>Changes to This Policy</H2>
         <P>
           We may update this Privacy Policy from time to time. When we do, we
-          will revise the &ldquo;Last updated&rdquo; date above. Material changes
-          will be reflected on this page, and your continued use of the website
-          after changes become effective constitutes acceptance of the updated
-          policy.
+          will revise the &ldquo;Last updated&rdquo; date above. Material
+          changes will be reflected on this page, and your continued use of the
+          website after changes become effective constitutes acceptance of the
+          updated policy.
         </P>
 
         <H2>Contact Us</H2>

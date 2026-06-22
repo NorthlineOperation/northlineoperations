@@ -77,42 +77,26 @@ import p1 from "@/assets/project-1.jpg";
 import p2 from "@/assets/project-2.jpg";
 import p3 from "@/assets/project-3.jpg";
 import p4 from "@/assets/project-4.jpg";
+import brandLogo from "../../../docs/logo.png";
 
 /* ---------------------------------------------------------------- *
  * Brand mark
  * ---------------------------------------------------------------- */
 
-const Logo = ({ light = true }: { light?: boolean }) => (
-  <a href="#top" className="flex items-center gap-2.5">
-    <div className="relative h-9 w-9 shrink-0">
-      <div className="absolute inset-0 rounded-lg bg-gold/20 blur-md" />
-      <svg viewBox="0 0 40 40" className="relative h-full w-full">
-        <path
-          d="M6 34 L6 6 L14 6 L34 34 L34 6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="4"
-          className="text-gold"
-        />
-        <path
-          d="M10 30 L10 10 L30 30"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-          className={light ? "text-white" : "text-ink"}
-        />
-      </svg>
-    </div>
-    <div className="leading-none">
-      <div
-        className={`font-display text-xl font-bold tracking-wide ${light ? "text-white" : "text-ink"}`}
-      >
-        NORTHLINE
-      </div>
-      <div className="text-[10px] tracking-[0.3em] text-gold mt-0.5">
-        OPERATION
-      </div>
-    </div>
+const Logo = ({ priority = false }: { priority?: boolean }) => (
+  <a
+    href="#top"
+    aria-label="Northline Operation home"
+    className="relative block h-12 w-32 shrink-0 overflow-hidden rounded-md ring-1 ring-white/10 sm:h-14 sm:w-36"
+  >
+    <Image
+      src={brandLogo}
+      alt="Northline Operation"
+      fill
+      priority={priority}
+      sizes="(min-width: 640px) 144px, 128px"
+      className="object-cover object-[center_57%]"
+    />
   </a>
 );
 
@@ -389,7 +373,7 @@ function Header({ onJoinTeam }: { onJoinTeam: () => void }) {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-8">
-        <Logo />
+        <Logo priority />
         <nav className="hidden items-center gap-7 text-xs font-semibold tracking-wider lg:flex">
           {navLinks.map((l) => {
             const isActive = active === l.href.replace("#", "");
