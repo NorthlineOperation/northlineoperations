@@ -233,14 +233,17 @@ function GoldButton({
   href,
   children,
   className = "",
+  onClick,
 }: {
   href: string;
   children: React.ReactNode;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }) {
   return (
     <motion.a
       href={href}
+      onClick={onClick}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.97 }}
       className={cn(
@@ -293,6 +296,49 @@ function Header({ onJoinTeam }: { onJoinTeam: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("top");
+
+  function scrollToHash(href: string) {
+    const targetId = href.replace("#", "");
+
+    if (!targetId) {
+      return;
+    }
+
+    const target = document.getElementById(targetId);
+
+    if (!target) {
+      return;
+    }
+
+    const headerBar = document.querySelector("header > div");
+    const headerOffset =
+      targetId === "top"
+        ? 0
+        : (headerBar?.getBoundingClientRect().height ?? 72) + 12;
+    const top =
+      targetId === "top"
+        ? 0
+        : target.getBoundingClientRect().top + window.scrollY - headerOffset;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    window.history.pushState(null, "", href);
+    window.scrollTo({
+      top: Math.max(0, top),
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }
+
+  function handleMobileHashClick(
+    href: string,
+  ): React.MouseEventHandler<HTMLAnchorElement> {
+    return (event) => {
+      event.preventDefault();
+      setOpen(false);
+      window.setTimeout(() => scrollToHash(href), 120);
+    };
+  }
 
   useEffect(() => {
     const ids = navLinks.map((l) => l.href.replace("#", ""));
@@ -400,7 +446,7 @@ function Header({ onJoinTeam }: { onJoinTeam: () => void }) {
                 <a
                   key={l.label}
                   href={l.href}
-                  onClick={() => setOpen(false)}
+                  onClick={handleMobileHashClick(l.href)}
                   className={`rounded-md px-3 py-3 text-sm font-semibold tracking-wider transition hover:bg-white/10 hover:text-gold ${
                     active === l.href.replace("#", "")
                       ? "bg-white/5 text-gold"
@@ -420,7 +466,11 @@ function Header({ onJoinTeam }: { onJoinTeam: () => void }) {
               >
                 JOIN THE TEAM
               </button>
-              <GoldButton href="#quote" className="mt-2 justify-center">
+              <GoldButton
+                href="#quote"
+                className="mt-2 justify-center"
+                onClick={handleMobileHashClick("#quote")}
+              >
                 GET A QUOTE <ArrowRight className="h-4 w-4" />
               </GoldButton>
             </div>
