@@ -1,3 +1,5 @@
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 
 type RateLimitOptions = {
@@ -16,43 +18,38 @@ export type RateLimitResult = {
   retryAfterSeconds: number;
 };
 
-type Bucket = { count: number; reset: number };
+/* ------------------------------------------------------------------ *
+ * In-memory store — default, and the fallback if Redis is unreachable.
+ * Reliable on a single warm instance; not shared across instances.
+ * ------------------------------------------------------------------ */
 
-/**
- * In-memory fixed-window rate limiter.
- *
- * Note: state lives in the server instance's memory. On a single warm instance
- * (typical for low/medium traffic) this reliably throttles bursty abuse from an
- * IP. For multi-instance, high-scale guarantees, swap the store below for a
- * shared backend (e.g. Upstash Redis / `@upstash/ratelimit`) — the call sites
- * don't need to change.
- */
-const store = new Map<string, Bucket>();
+type Bucket = { count: number; reset: number };
+const memoryStore = new Map<string, Bucket>();
 let lastSweep = 0;
 
 function sweepExpired(now: number) {
   if (now - lastSweep < 60_000) return;
   lastSweep = now;
-  for (const [key, bucket] of store) {
+  for (const [key, bucket] of memoryStore) {
     if (bucket.reset <= now) {
-      store.delete(key);
+      memoryStore.delete(key);
     }
   }
 }
 
-export function rateLimit(
+function memoryRateLimit(
   key: string,
   { limit, windowMs }: RateLimitOptions,
 ): RateLimitResult {
   const now = Date.now();
   sweepExpired(now);
 
-  const existing = store.get(key);
+  const existing = memoryStore.get(key);
   let bucket: Bucket;
 
   if (!existing || existing.reset <= now) {
     bucket = { count: 0, reset: now + windowMs };
-    store.set(key, bucket);
+    memoryStore.set(key, bucket);
   } else {
     bucket = existing;
   }
@@ -66,6 +63,71 @@ export function rateLimit(
     reset: bucket.reset,
     retryAfterSeconds: Math.max(1, Math.ceil((bucket.reset - now) / 1000)),
   };
+}
+
+/* ------------------------------------------------------------------ *
+ * Upstash Redis — distributed, used automatically when configured.
+ * Supports both the Upstash-native and Vercel KV env var names.
+ * ------------------------------------------------------------------ */
+
+const redisUrl =
+  process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+const redisToken =
+  process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+
+const redis =
+  redisUrl && redisToken
+    ? new Redis({ url: redisUrl, token: redisToken })
+    : null;
+
+// One Ratelimit instance per (limit, window) pair.
+const limiters = new Map<string, Ratelimit>();
+
+function getLimiter(limit: number, windowMs: number): Ratelimit | null {
+  if (!redis) return null;
+
+  const cacheKey = `${limit}:${windowMs}`;
+  let limiter = limiters.get(cacheKey);
+  if (!limiter) {
+    limiter = new Ratelimit({
+      redis,
+      prefix: "northline-rl",
+      analytics: false,
+      limiter: Ratelimit.slidingWindow(limit, `${windowMs} ms` as `${number} ms`),
+    });
+    limiters.set(cacheKey, limiter);
+  }
+  return limiter;
+}
+
+/**
+ * Rate limit by key. Uses Upstash Redis when configured (works across all
+ * serverless instances), otherwise an in-memory window. Falls back to
+ * in-memory if Redis is temporarily unavailable so the form still throttles.
+ */
+export async function rateLimit(
+  key: string,
+  options: RateLimitOptions,
+): Promise<RateLimitResult> {
+  const limiter = getLimiter(options.limit, options.windowMs);
+
+  if (limiter) {
+    try {
+      const result = await limiter.limit(key);
+      const now = Date.now();
+      return {
+        success: result.success,
+        limit: result.limit,
+        remaining: Math.max(0, result.remaining),
+        reset: result.reset,
+        retryAfterSeconds: Math.max(1, Math.ceil((result.reset - now) / 1000)),
+      };
+    } catch {
+      return memoryRateLimit(key, options);
+    }
+  }
+
+  return memoryRateLimit(key, options);
 }
 
 /** Best-effort client IP from proxy headers (Vercel sets x-forwarded-for). */

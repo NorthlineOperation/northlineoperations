@@ -27,7 +27,7 @@ const applicationSchema = z.object({
 type ApplicationPayload = z.infer<typeof applicationSchema>;
 
 export async function POST(request: Request) {
-  const limited = rateLimit(`apply:${getClientIp(request)}`, RATE_LIMIT);
+  const limited = await rateLimit(`apply:${getClientIp(request)}`, RATE_LIMIT);
   if (!limited.success) {
     return tooManyRequestsResponse(limited);
   }

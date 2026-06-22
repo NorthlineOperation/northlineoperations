@@ -90,7 +90,7 @@ type QuoteRequestRow = {
 };
 
 export async function POST(request: Request) {
-  const limited = rateLimit(`quote:${getClientIp(request)}`, RATE_LIMIT);
+  const limited = await rateLimit(`quote:${getClientIp(request)}`, RATE_LIMIT);
   if (!limited.success) {
     return tooManyRequestsResponse(limited);
   }

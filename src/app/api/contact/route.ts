@@ -24,7 +24,7 @@ const contactSchema = z.object({
 type ContactPayload = z.infer<typeof contactSchema>;
 
 export async function POST(request: Request) {
-  const limited = rateLimit(`contact:${getClientIp(request)}`, RATE_LIMIT);
+  const limited = await rateLimit(`contact:${getClientIp(request)}`, RATE_LIMIT);
   if (!limited.success) {
     return tooManyRequestsResponse(limited);
   }

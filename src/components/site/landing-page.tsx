@@ -329,17 +329,17 @@ function Header({ onJoinTeam }: { onJoinTeam: () => void }) {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  const solid = scrolled || open;
-
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        solid
-          ? "glass-strong shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)]"
-          : "bg-transparent"
+        open
+          ? "bg-[var(--ink-deep)] shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)]"
+          : scrolled
+            ? "glass-strong shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)]"
+            : "bg-transparent"
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-8">
@@ -376,7 +376,10 @@ function Header({ onJoinTeam }: { onJoinTeam: () => void }) {
             onClick={() => setOpen((v) => !v)}
             aria-label="Toggle menu"
             aria-expanded={open}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-md glass text-white lg:hidden"
+            className={cn(
+              "grid h-10 w-10 shrink-0 place-items-center rounded-md text-white transition-colors lg:hidden",
+              open ? "bg-[var(--ink-deep)] ring-1 ring-white/15" : "glass",
+            )}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -390,7 +393,7 @@ function Header({ onJoinTeam }: { onJoinTeam: () => void }) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="overflow-hidden border-t border-white/10 lg:hidden"
+            className="overflow-hidden border-t border-white/10 bg-[var(--ink-deep)] shadow-[0_20px_45px_-28px_rgba(0,0,0,0.9)] lg:hidden"
           >
             <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-8">
               {navLinks.map((l) => (
