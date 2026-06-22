@@ -2,11 +2,17 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getJobApplicationRecipient, sendEmail } from "@/lib/email/mailer";
+import {
+  getClientIp,
+  rateLimit,
+  tooManyRequestsResponse,
+} from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const MAX_RESUME_SIZE = 5 * 1024 * 1024;
+const RATE_LIMIT = { limit: 3, windowMs: 10 * 60 * 1000 };
 
 const applicationSchema = z.object({
   fullName: z.string().trim().min(1),
@@ -21,6 +27,11 @@ const applicationSchema = z.object({
 type ApplicationPayload = z.infer<typeof applicationSchema>;
 
 export async function POST(request: Request) {
+  const limited = rateLimit(`apply:${getClientIp(request)}`, RATE_LIMIT);
+  if (!limited.success) {
+    return tooManyRequestsResponse(limited);
+  }
+
   try {
     const { payload, resume } = await readApplication(request);
 

@@ -4,9 +4,16 @@ import { z } from "zod";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getQuoteStorageBucket } from "@/lib/supabase/env";
 import { getQuoteRequestRecipient, sendEmail } from "@/lib/email/mailer";
+import {
+  getClientIp,
+  rateLimit,
+  tooManyRequestsResponse,
+} from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+const RATE_LIMIT = { limit: 5, windowMs: 10 * 60 * 1000 };
 
 const MAX_FLOOR_PLAN_SIZE = 10 * 1024 * 1024;
 const ALLOWED_FLOOR_PLAN_TYPES = new Set([
@@ -83,6 +90,11 @@ type QuoteRequestRow = {
 };
 
 export async function POST(request: Request) {
+  const limited = rateLimit(`quote:${getClientIp(request)}`, RATE_LIMIT);
+  if (!limited.success) {
+    return tooManyRequestsResponse(limited);
+  }
+
   try {
     const { payload, floorPlan } = await readQuoteRequest(request);
     const requestId = crypto.randomUUID();

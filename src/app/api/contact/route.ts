@@ -2,9 +2,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getContactRecipient, sendEmail } from "@/lib/email/mailer";
+import {
+  getClientIp,
+  rateLimit,
+  tooManyRequestsResponse,
+} from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+const RATE_LIMIT = { limit: 5, windowMs: 10 * 60 * 1000 };
 
 const contactSchema = z.object({
   fullName: z.string().trim().min(1),
@@ -17,6 +24,11 @@ const contactSchema = z.object({
 type ContactPayload = z.infer<typeof contactSchema>;
 
 export async function POST(request: Request) {
+  const limited = rateLimit(`contact:${getClientIp(request)}`, RATE_LIMIT);
+  if (!limited.success) {
+    return tooManyRequestsResponse(limited);
+  }
+
   try {
     const payload = contactSchema.parse(await request.json());
 
