@@ -8,12 +8,15 @@ import {
   Database,
   ExternalLink,
   Eye,
+  EyeOff,
   FileText,
   ImageIcon,
+  Monitor,
   Plus,
   RefreshCw,
   RotateCcw,
   Save,
+  Smartphone,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -57,6 +60,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  PREVIEW_MESSAGE_TYPE,
+  PREVIEW_READY_TYPE,
+} from "@/lib/cms/preview-messages";
 import type {
   CmsImageAsset,
   LandingPageContent,
@@ -152,6 +159,7 @@ export function LandingPageEditor({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const isDirty = useMemo(
     () => JSON.stringify(content) !== JSON.stringify(record.content),
@@ -304,9 +312,22 @@ export function LandingPageEditor({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant={showPreview ? "secondary" : "outline"}
+              onClick={() => setShowPreview((current) => !current)}
+              aria-pressed={showPreview}
+            >
+              {showPreview ? (
+                <EyeOff data-icon="inline-start" />
+              ) : (
+                <Eye data-icon="inline-start" />
+              )}
+              {showPreview ? "Hide preview" : "Preview"}
+            </Button>
             <Button type="button" variant="outline" asChild>
               <Link href="/" target="_blank">
-                <Eye data-icon="inline-start" />
+                <ExternalLink data-icon="inline-start" />
                 View site
               </Link>
             </Button>
@@ -358,1054 +379,1230 @@ export function LandingPageEditor({
         </Alert>
       ) : null}
 
-      <Tabs defaultValue="hero" className="flex flex-col gap-4">
-        <TabsList className="flex h-auto flex-wrap justify-start">
-          <TabsTrigger value="hero">Hero</TabsTrigger>
-          <TabsTrigger value="about">About</TabsTrigger>
-          <TabsTrigger value="services">Services</TabsTrigger>
-          <TabsTrigger value="why">Why & Mission</TabsTrigger>
-          <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="footer">Quote & Footer</TabsTrigger>
-          <TabsTrigger value="media">Media</TabsTrigger>
-        </TabsList>
+      <div
+        className={cn(
+          "flex flex-col gap-6",
+          showPreview && "xl:flex-row xl:items-start",
+        )}
+      >
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <Tabs defaultValue="hero" className="flex flex-col gap-4">
+            <TabsList className="flex h-auto flex-wrap justify-start">
+              <TabsTrigger value="hero">Hero</TabsTrigger>
+              <TabsTrigger value="about">About</TabsTrigger>
+              <TabsTrigger value="services">Services</TabsTrigger>
+              <TabsTrigger value="why">Why & Mission</TabsTrigger>
+              <TabsTrigger value="projects">Projects</TabsTrigger>
+              <TabsTrigger value="footer">Quote & Footer</TabsTrigger>
+              <TabsTrigger value="media">Media</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="hero" className="m-0">
-          <EditorGrid>
-            <Card>
-              <CardHeader>
-                <CardTitle>Hero copy</CardTitle>
-                <CardDescription>
-                  Main headline, supporting copy, buttons, and badges.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <TwoColumn>
-                  <TextField
-                    label="Title line 1"
-                    value={content.hero.titleLine1}
-                    onChange={(value) =>
-                      setValue(["hero", "titleLine1"], value)
-                    }
-                  />
-                  <TextField
-                    label="Title line 2"
-                    value={content.hero.titleLine2}
-                    onChange={(value) =>
-                      setValue(["hero", "titleLine2"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextareaField
-                  label="Summary"
-                  value={content.hero.summary}
-                  rows={3}
-                  onChange={(value) => setValue(["hero", "summary"], value)}
-                />
-                <TextareaField
-                  label="Description"
-                  value={content.hero.description}
-                  rows={4}
-                  onChange={(value) => setValue(["hero", "description"], value)}
-                />
-                <CtaFields
-                  label="Primary button"
-                  cta={content.hero.primaryCta}
-                  onChange={(field, value) =>
-                    setValue(["hero", "primaryCta", field], value)
-                  }
-                />
-                <CtaFields
-                  label="Secondary button"
-                  cta={content.hero.secondaryCta}
-                  onChange={(field, value) =>
-                    setValue(["hero", "secondaryCta", field], value)
-                  }
-                />
-                <StringListEditor
-                  label="Hero badges"
-                  items={content.hero.pills}
-                  addLabel="Add badge"
-                  onChange={(index, value) =>
-                    setValue(["hero", "pills", index], value)
-                  }
-                  onAdd={() => addItem(["hero", "pills"], "New badge")}
-                  onRemove={(index) => removeItem(["hero", "pills"], index)}
-                />
-              </CardContent>
-            </Card>
-
-            <ImagePicker
-              label="Hero background image"
-              fallbackLabel="Uses bundled hero image when empty"
-              image={content.hero.image}
-              mediaAssets={mediaAssets}
-              onChange={(image) => setImage(["hero", "image"], image)}
-              onMediaChanged={loadMedia}
-            />
-          </EditorGrid>
-        </TabsContent>
-
-        <TabsContent value="about" className="m-0">
-          <EditorGrid>
-            <Card>
-              <CardHeader>
-                <CardTitle>About section</CardTitle>
-                <CardDescription>
-                  Intro text, body paragraphs, and section CTA.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <TextField
-                  label="Eyebrow"
-                  value={content.about.eyebrow}
-                  onChange={(value) => setValue(["about", "eyebrow"], value)}
-                />
-                <TwoColumn>
-                  <TextField
-                    label="Heading line 1"
-                    value={content.about.headingLine1}
-                    onChange={(value) =>
-                      setValue(["about", "headingLine1"], value)
-                    }
-                  />
-                  <TextField
-                    label="Heading line 2"
-                    value={content.about.headingLine2}
-                    onChange={(value) =>
-                      setValue(["about", "headingLine2"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextareaField
-                  label="Intro"
-                  value={content.about.intro}
-                  rows={3}
-                  onChange={(value) => setValue(["about", "intro"], value)}
-                />
-                <StringListEditor
-                  label="Paragraphs"
-                  items={content.about.paragraphs}
-                  addLabel="Add paragraph"
-                  multiline
-                  onChange={(index, value) =>
-                    setValue(["about", "paragraphs", index], value)
-                  }
-                  onAdd={() =>
-                    addItem(["about", "paragraphs"], "New paragraph")
-                  }
-                  onRemove={(index) =>
-                    removeItem(["about", "paragraphs"], index)
-                  }
-                />
-                <TextareaField
-                  label="Emphasis"
-                  value={content.about.emphasis}
-                  rows={2}
-                  onChange={(value) => setValue(["about", "emphasis"], value)}
-                />
-                <TextField
-                  label="Image badge"
-                  value={content.about.imageBadge}
-                  onChange={(value) => setValue(["about", "imageBadge"], value)}
-                />
-                <CtaFields
-                  label="CTA"
-                  cta={content.about.cta}
-                  onChange={(field, value) =>
-                    setValue(["about", "cta", field], value)
-                  }
-                />
-              </CardContent>
-            </Card>
-
-            <ImagePicker
-              label="About image"
-              fallbackLabel="Uses bundled van image when empty"
-              image={content.about.image}
-              mediaAssets={mediaAssets}
-              onChange={(image) => setImage(["about", "image"], image)}
-              onMediaChanged={loadMedia}
-            />
-          </EditorGrid>
-        </TabsContent>
-
-        <TabsContent value="services" className="m-0">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Services intro</CardTitle>
-                <CardDescription>
-                  Section heading and description above the service cards.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <TextField
-                  label="Eyebrow"
-                  value={content.servicesIntro.eyebrow}
-                  onChange={(value) =>
-                    setValue(["servicesIntro", "eyebrow"], value)
-                  }
-                />
-                <TwoColumn>
-                  <TextField
-                    label="Heading prefix"
-                    value={content.servicesIntro.headingPrefix}
-                    onChange={(value) =>
-                      setValue(["servicesIntro", "headingPrefix"], value)
-                    }
-                  />
-                  <TextField
-                    label="Highlighted heading"
-                    value={content.servicesIntro.headingHighlight}
-                    onChange={(value) =>
-                      setValue(["servicesIntro", "headingHighlight"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextareaField
-                  label="Description"
-                  value={content.servicesIntro.description}
-                  rows={3}
-                  onChange={(value) =>
-                    setValue(["servicesIntro", "description"], value)
-                  }
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <CardTitle>Service cards</CardTitle>
+            <TabsContent value="hero" className="m-0">
+              <EditorGrid>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Hero copy</CardTitle>
                     <CardDescription>
-                      Manage services, bullets, icons, and card images.
+                      Main headline, supporting copy, buttons, and badges.
                     </CardDescription>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      addItem(["services"], {
-                        imageKey: "post",
-                        image: blankImage,
-                        iconKey: "sparkles",
-                        title: "NEW SERVICE",
-                        bullets: ["New bullet"],
-                      })
-                    }
-                  >
-                    <Plus data-icon="inline-start" />
-                    Add service
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="multiple" className="w-full">
-                  {content.services.map((service, serviceIndex) => (
-                    <AccordionItem
-                      key={`service-${serviceIndex}`}
-                      value={`service-${serviceIndex}`}
-                    >
-                      <AccordionTrigger>
-                        {service.title || `Service ${serviceIndex + 1}`}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-                          <div className="flex flex-col gap-6">
-                            <TextField
-                              label="Title"
-                              value={service.title}
-                              onChange={(value) =>
-                                setValue(
-                                  ["services", serviceIndex, "title"],
-                                  value,
-                                )
-                              }
-                            />
-                            <TwoColumn>
-                              <SelectField
-                                label="Icon"
-                                value={service.iconKey}
-                                options={serviceIconOptions}
-                                onChange={(value) =>
-                                  setValue(
-                                    ["services", serviceIndex, "iconKey"],
-                                    value,
-                                  )
-                                }
-                              />
-                              <SelectField
-                                label="Fallback image"
-                                value={service.imageKey}
-                                options={serviceImageOptions}
-                                onChange={(value) =>
-                                  setValue(
-                                    ["services", serviceIndex, "imageKey"],
-                                    value,
-                                  )
-                                }
-                              />
-                            </TwoColumn>
-                            <StringListEditor
-                              label="Bullets"
-                              items={service.bullets}
-                              addLabel="Add bullet"
-                              onChange={(bulletIndex, value) =>
-                                setValue(
-                                  [
-                                    "services",
-                                    serviceIndex,
-                                    "bullets",
-                                    bulletIndex,
-                                  ],
-                                  value,
-                                )
-                              }
-                              onAdd={() =>
-                                addItem(
-                                  ["services", serviceIndex, "bullets"],
-                                  "New bullet",
-                                )
-                              }
-                              onRemove={(bulletIndex) =>
-                                removeItem(
-                                  ["services", serviceIndex, "bullets"],
-                                  bulletIndex,
-                                )
-                              }
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-fit"
-                              disabled={content.services.length <= 1}
-                              onClick={() =>
-                                removeItem(["services"], serviceIndex)
-                              }
-                            >
-                              <Trash2 data-icon="inline-start" />
-                              Remove service
-                            </Button>
-                          </div>
-                          <ImagePicker
-                            label="Service image"
-                            fallbackLabel="Uses selected fallback image when empty"
-                            image={service.image}
-                            mediaAssets={mediaAssets}
-                            onChange={(image) =>
-                              setImage(
-                                ["services", serviceIndex, "image"],
-                                image,
-                              )
-                            }
-                            onMediaChanged={loadMedia}
-                          />
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <TwoColumn>
+                      <TextField
+                        label="Title line 1"
+                        value={content.hero.titleLine1}
+                        onChange={(value) =>
+                          setValue(["hero", "titleLine1"], value)
+                        }
+                      />
+                      <TextField
+                        label="Title line 2"
+                        value={content.hero.titleLine2}
+                        onChange={(value) =>
+                          setValue(["hero", "titleLine2"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextareaField
+                      label="Summary"
+                      value={content.hero.summary}
+                      rows={3}
+                      onChange={(value) => setValue(["hero", "summary"], value)}
+                    />
+                    <TextareaField
+                      label="Description"
+                      value={content.hero.description}
+                      rows={4}
+                      onChange={(value) =>
+                        setValue(["hero", "description"], value)
+                      }
+                    />
+                    <CtaFields
+                      label="Primary button"
+                      cta={content.hero.primaryCta}
+                      onChange={(field, value) =>
+                        setValue(["hero", "primaryCta", field], value)
+                      }
+                    />
+                    <CtaFields
+                      label="Secondary button"
+                      cta={content.hero.secondaryCta}
+                      onChange={(field, value) =>
+                        setValue(["hero", "secondaryCta", field], value)
+                      }
+                    />
+                    <StringListEditor
+                      label="Hero badges"
+                      items={content.hero.pills}
+                      addLabel="Add badge"
+                      onChange={(index, value) =>
+                        setValue(["hero", "pills", index], value)
+                      }
+                      onAdd={() => addItem(["hero", "pills"], "New badge")}
+                      onRemove={(index) => removeItem(["hero", "pills"], index)}
+                    />
+                  </CardContent>
+                </Card>
 
-        <TabsContent value="why" className="m-0">
-          <div className="grid gap-6 xl:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Why choose section</CardTitle>
-                <CardDescription>
-                  Section copy, CTA, and reason tiles.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <TextField
-                  label="Eyebrow"
-                  value={content.whyChoose.eyebrow}
-                  onChange={(value) =>
-                    setValue(["whyChoose", "eyebrow"], value)
-                  }
+                <ImagePicker
+                  label="Hero background image"
+                  fallbackLabel="Uses bundled hero image when empty"
+                  image={content.hero.image}
+                  mediaAssets={mediaAssets}
+                  onChange={(image) => setImage(["hero", "image"], image)}
+                  onMediaChanged={loadMedia}
                 />
-                <TwoColumn>
-                  <TextField
-                    label="Heading line 1"
-                    value={content.whyChoose.headingLine1}
-                    onChange={(value) =>
-                      setValue(["whyChoose", "headingLine1"], value)
-                    }
-                  />
-                  <TextField
-                    label="Heading line 2"
-                    value={content.whyChoose.headingLine2}
-                    onChange={(value) =>
-                      setValue(["whyChoose", "headingLine2"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextareaField
-                  label="Description"
-                  value={content.whyChoose.description}
-                  rows={4}
-                  onChange={(value) =>
-                    setValue(["whyChoose", "description"], value)
-                  }
-                />
-                <CtaFields
-                  label="CTA"
-                  cta={content.whyChoose.cta}
-                  onChange={(field, value) =>
-                    setValue(["whyChoose", "cta", field], value)
-                  }
-                />
-                <ReasonListEditor
-                  items={content.whyChoose.items}
-                  onChange={(index, field, value) =>
-                    setValue(["whyChoose", "items", index, field], value)
-                  }
-                  onAdd={() =>
-                    addItem(["whyChoose", "items"], {
-                      iconKey: "shield",
-                      label: "New reason",
-                    })
-                  }
-                  onRemove={(index) =>
-                    removeItem(["whyChoose", "items"], index)
-                  }
-                />
-              </CardContent>
-            </Card>
+              </EditorGrid>
+            </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Mission section</CardTitle>
-                <CardDescription>
-                  Mission headline, quote, and focus statement.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <TwoColumn>
-                  <TextField
-                    label="Heading line 1"
-                    value={content.mission.headingLine1}
-                    onChange={(value) =>
-                      setValue(["mission", "headingLine1"], value)
-                    }
-                  />
-                  <TextField
-                    label="Heading line 2"
-                    value={content.mission.headingLine2}
-                    onChange={(value) =>
-                      setValue(["mission", "headingLine2"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextareaField
-                  label="Description"
-                  value={content.mission.description}
-                  rows={4}
-                  onChange={(value) =>
-                    setValue(["mission", "description"], value)
-                  }
-                />
-                <TextField
-                  label="Quote lead"
-                  value={content.mission.quoteLead}
-                  onChange={(value) =>
-                    setValue(["mission", "quoteLead"], value)
-                  }
-                />
-                <TextField
-                  label="Quote emphasis"
-                  value={content.mission.quoteEmphasis}
-                  onChange={(value) =>
-                    setValue(["mission", "quoteEmphasis"], value)
-                  }
-                />
-                <TwoColumn>
-                  <TextField
-                    label="Focus label line 1"
-                    value={content.mission.focusLabelLine1}
-                    onChange={(value) =>
-                      setValue(["mission", "focusLabelLine1"], value)
-                    }
-                  />
-                  <TextField
-                    label="Focus label line 2"
-                    value={content.mission.focusLabelLine2}
-                    onChange={(value) =>
-                      setValue(["mission", "focusLabelLine2"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextareaField
-                  label="Focus text"
-                  value={content.mission.focusText}
-                  rows={4}
-                  onChange={(value) =>
-                    setValue(["mission", "focusText"], value)
-                  }
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="projects" className="m-0">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Projects section</CardTitle>
-                <CardDescription>
-                  Project copy, CTA, service area, and taxonomy.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <TwoColumn>
-                  <TextField
-                    label="Heading prefix"
-                    value={content.projects.headingPrefix}
-                    onChange={(value) =>
-                      setValue(["projects", "headingPrefix"], value)
-                    }
-                  />
-                  <TextField
-                    label="Highlighted heading"
-                    value={content.projects.headingHighlight}
-                    onChange={(value) =>
-                      setValue(["projects", "headingHighlight"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextareaField
-                  label="Description"
-                  value={content.projects.description}
-                  rows={4}
-                  onChange={(value) =>
-                    setValue(["projects", "description"], value)
-                  }
-                />
-                <CtaFields
-                  label="CTA"
-                  cta={content.projects.cta}
-                  onChange={(field, value) =>
-                    setValue(["projects", "cta", field], value)
-                  }
-                />
-                <TextField
-                  label="Service area label"
-                  value={content.projects.serviceAreaLabel}
-                  onChange={(value) =>
-                    setValue(["projects", "serviceAreaLabel"], value)
-                  }
-                />
-                <TwoColumn>
-                  <StringListEditor
-                    label="Project types"
-                    items={content.projects.projectTypes}
-                    addLabel="Add type"
-                    onChange={(index, value) =>
-                      setValue(["projects", "projectTypes", index], value)
-                    }
-                    onAdd={() =>
-                      addItem(["projects", "projectTypes"], "New project type")
-                    }
-                    onRemove={(index) =>
-                      removeItem(["projects", "projectTypes"], index)
-                    }
-                  />
-                  <StringListEditor
-                    label="Cities"
-                    items={content.projects.cities}
-                    addLabel="Add city"
-                    onChange={(index, value) =>
-                      setValue(["projects", "cities", index], value)
-                    }
-                    onAdd={() => addItem(["projects", "cities"], "New city")}
-                    onRemove={(index) =>
-                      removeItem(["projects", "cities"], index)
-                    }
-                  />
-                </TwoColumn>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <CardTitle>Project gallery</CardTitle>
+            <TabsContent value="about" className="m-0">
+              <EditorGrid>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About section</CardTitle>
                     <CardDescription>
-                      The first four projects appear on the landing page.
+                      Intro text, body paragraphs, and section CTA.
                     </CardDescription>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      addItem(["projects", "items"], createBlankProject())
-                    }
-                  >
-                    <Plus data-icon="inline-start" />
-                    Add project
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="multiple" className="w-full">
-                  {content.projects.items.map((project, projectIndex) => (
-                    <AccordionItem
-                      key={project.id}
-                      value={`project-${projectIndex}`}
-                    >
-                      <AccordionTrigger>
-                        {projectIndex < 4
-                          ? `${project.title} - Featured`
-                          : project.title}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="flex flex-col gap-6">
-                          <div className="grid gap-5 xl:grid-cols-2">
-                            <div className="flex flex-col gap-6">
-                              <TextField
-                                label="Project title"
-                                value={project.title}
-                                onChange={(value) =>
-                                  setValue(
-                                    [
-                                      "projects",
-                                      "items",
-                                      projectIndex,
-                                      "title",
-                                    ],
-                                    value,
-                                  )
-                                }
-                              />
-                              <TwoColumn>
-                                <TextField
-                                  label="Category"
-                                  value={project.category}
-                                  onChange={(value) =>
-                                    setValue(
-                                      [
-                                        "projects",
-                                        "items",
-                                        projectIndex,
-                                        "category",
-                                      ],
-                                      value,
-                                    )
-                                  }
-                                />
-                                <TextField
-                                  label="Location"
-                                  value={project.location}
-                                  onChange={(value) =>
-                                    setValue(
-                                      [
-                                        "projects",
-                                        "items",
-                                        projectIndex,
-                                        "location",
-                                      ],
-                                      value,
-                                    )
-                                  }
-                                />
-                              </TwoColumn>
-                              <TextareaField
-                                label="Summary"
-                                value={project.summary}
-                                rows={4}
-                                onChange={(value) =>
-                                  setValue(
-                                    [
-                                      "projects",
-                                      "items",
-                                      projectIndex,
-                                      "summary",
-                                    ],
-                                    value,
-                                  )
-                                }
-                              />
-                              <div className="flex flex-wrap gap-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  disabled={projectIndex === 0}
-                                  onClick={() =>
-                                    moveItem(
-                                      ["projects", "items"],
-                                      projectIndex,
-                                      -1,
-                                    )
-                                  }
-                                >
-                                  <ArrowUp data-icon="inline-start" />
-                                  Move up
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  disabled={
-                                    projectIndex ===
-                                    content.projects.items.length - 1
-                                  }
-                                  onClick={() =>
-                                    moveItem(
-                                      ["projects", "items"],
-                                      projectIndex,
-                                      1,
-                                    )
-                                  }
-                                >
-                                  <ArrowDown data-icon="inline-start" />
-                                  Move down
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  disabled={content.projects.items.length <= 4}
-                                  onClick={() =>
-                                    removeItem(
-                                      ["projects", "items"],
-                                      projectIndex,
-                                    )
-                                  }
-                                >
-                                  <Trash2 data-icon="inline-start" />
-                                  Remove
-                                </Button>
-                              </div>
-                            </div>
-                            <div className="rounded-md border bg-secondary p-4 text-sm text-muted-foreground">
-                              {projectIndex < 4
-                                ? "This project is visible on the landing page. The landing card uses the after photo only."
-                                : "This project is visible in View all projects. Move it into the first four positions to feature it on the landing page."}
-                            </div>
-                          </div>
-                          <div className="grid gap-4 lg:grid-cols-2">
-                            <ImagePicker
-                              label="Before photo"
-                              fallbackLabel="Shown in project viewer and all-projects gallery"
-                              image={project.beforeImage}
-                              mediaAssets={mediaAssets}
-                              onChange={(image) =>
-                                setImage(
-                                  [
-                                    "projects",
-                                    "items",
-                                    projectIndex,
-                                    "beforeImage",
-                                  ],
-                                  image,
-                                )
-                              }
-                              onMediaChanged={loadMedia}
-                            />
-                            <ImagePicker
-                              label="After photo"
-                              fallbackLabel="Shown on the landing page for featured projects"
-                              image={project.afterImage}
-                              mediaAssets={mediaAssets}
-                              onChange={(image) =>
-                                setImage(
-                                  [
-                                    "projects",
-                                    "items",
-                                    projectIndex,
-                                    "afterImage",
-                                  ],
-                                  image,
-                                )
-                              }
-                              onMediaChanged={loadMedia}
-                            />
-                          </div>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <TextField
+                      label="Eyebrow"
+                      value={content.about.eyebrow}
+                      onChange={(value) =>
+                        setValue(["about", "eyebrow"], value)
+                      }
+                    />
+                    <TwoColumn>
+                      <TextField
+                        label="Heading line 1"
+                        value={content.about.headingLine1}
+                        onChange={(value) =>
+                          setValue(["about", "headingLine1"], value)
+                        }
+                      />
+                      <TextField
+                        label="Heading line 2"
+                        value={content.about.headingLine2}
+                        onChange={(value) =>
+                          setValue(["about", "headingLine2"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextareaField
+                      label="Intro"
+                      value={content.about.intro}
+                      rows={3}
+                      onChange={(value) => setValue(["about", "intro"], value)}
+                    />
+                    <StringListEditor
+                      label="Paragraphs"
+                      items={content.about.paragraphs}
+                      addLabel="Add paragraph"
+                      multiline
+                      onChange={(index, value) =>
+                        setValue(["about", "paragraphs", index], value)
+                      }
+                      onAdd={() =>
+                        addItem(["about", "paragraphs"], "New paragraph")
+                      }
+                      onRemove={(index) =>
+                        removeItem(["about", "paragraphs"], index)
+                      }
+                    />
+                    <TextareaField
+                      label="Emphasis"
+                      value={content.about.emphasis}
+                      rows={2}
+                      onChange={(value) =>
+                        setValue(["about", "emphasis"], value)
+                      }
+                    />
+                    <TextField
+                      label="Image badge"
+                      value={content.about.imageBadge}
+                      onChange={(value) =>
+                        setValue(["about", "imageBadge"], value)
+                      }
+                    />
+                    <CtaFields
+                      label="CTA"
+                      cta={content.about.cta}
+                      onChange={(field, value) =>
+                        setValue(["about", "cta", field], value)
+                      }
+                    />
+                  </CardContent>
+                </Card>
 
-        <TabsContent value="footer" className="m-0">
-          <div className="grid gap-6 xl:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Quote CTA</CardTitle>
-                <CardDescription>
-                  Gold quote band above the footer.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <TextField
-                  label="Title"
-                  value={content.quote.title}
-                  onChange={(value) => setValue(["quote", "title"], value)}
+                <ImagePicker
+                  label="About image"
+                  fallbackLabel="Uses bundled van image when empty"
+                  image={content.about.image}
+                  mediaAssets={mediaAssets}
+                  onChange={(image) => setImage(["about", "image"], image)}
+                  onMediaChanged={loadMedia}
                 />
-                <TextareaField
-                  label="Description"
-                  value={content.quote.description}
-                  rows={4}
-                  onChange={(value) =>
-                    setValue(["quote", "description"], value)
-                  }
-                />
-                <CtaFields
-                  label="CTA"
-                  cta={content.quote.cta}
-                  onChange={(field, value) =>
-                    setValue(["quote", "cta", field], value)
-                  }
-                />
-              </CardContent>
-            </Card>
+              </EditorGrid>
+            </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Footer and contact</CardTitle>
-                <CardDescription>
-                  Footer copy, contact details, and social links.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <TextareaField
-                  label="Description"
-                  value={content.footer.description}
-                  rows={3}
-                  onChange={(value) =>
-                    setValue(["footer", "description"], value)
-                  }
-                />
-                <TwoColumn>
-                  <TextField
-                    label="Quick links title"
-                    value={content.footer.quickLinksTitle}
-                    onChange={(value) =>
-                      setValue(["footer", "quickLinksTitle"], value)
-                    }
-                  />
-                  <TextField
-                    label="Services title"
-                    value={content.footer.servicesTitle}
-                    onChange={(value) =>
-                      setValue(["footer", "servicesTitle"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextField
-                  label="Contact title"
-                  value={content.footer.contactTitle}
-                  onChange={(value) =>
-                    setValue(["footer", "contactTitle"], value)
-                  }
-                />
-                <TwoColumn>
-                  <TextField
-                    label="Email"
-                    value={content.footer.email}
-                    onChange={(value) => setValue(["footer", "email"], value)}
-                  />
-                  <TextField
-                    label="Phone"
-                    value={content.footer.phone}
-                    onChange={(value) => setValue(["footer", "phone"], value)}
-                  />
-                </TwoColumn>
-                <TwoColumn>
-                  <TextField
-                    label="Location"
-                    value={content.footer.location}
-                    onChange={(value) =>
-                      setValue(["footer", "location"], value)
-                    }
-                  />
-                  <TextField
-                    label="Website"
-                    value={content.footer.website}
-                    onChange={(value) => setValue(["footer", "website"], value)}
-                  />
-                </TwoColumn>
-                <TextField
-                  label="Copyright"
-                  value={content.footer.copyright}
-                  onChange={(value) => setValue(["footer", "copyright"], value)}
-                />
-                <Separator />
-                <TwoColumn>
-                  <TextField
-                    label="Facebook URL"
-                    value={content.footer.socialLinks.facebook}
-                    onChange={(value) =>
-                      setValue(["footer", "socialLinks", "facebook"], value)
-                    }
-                  />
-                  <TextField
-                    label="LinkedIn URL"
-                    value={content.footer.socialLinks.linkedin}
-                    onChange={(value) =>
-                      setValue(["footer", "socialLinks", "linkedin"], value)
-                    }
-                  />
-                </TwoColumn>
-                <TextField
-                  label="Instagram URL"
-                  value={content.footer.socialLinks.instagram}
-                  onChange={(value) =>
-                    setValue(["footer", "socialLinks", "instagram"], value)
-                  }
-                />
-              </CardContent>
-            </Card>
+            <TabsContent value="services" className="m-0">
+              <div className="flex flex-col gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Services intro</CardTitle>
+                    <CardDescription>
+                      Section heading and description above the service cards.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <TextField
+                      label="Eyebrow"
+                      value={content.servicesIntro.eyebrow}
+                      onChange={(value) =>
+                        setValue(["servicesIntro", "eyebrow"], value)
+                      }
+                    />
+                    <TwoColumn>
+                      <TextField
+                        label="Heading prefix"
+                        value={content.servicesIntro.headingPrefix}
+                        onChange={(value) =>
+                          setValue(["servicesIntro", "headingPrefix"], value)
+                        }
+                      />
+                      <TextField
+                        label="Highlighted heading"
+                        value={content.servicesIntro.headingHighlight}
+                        onChange={(value) =>
+                          setValue(["servicesIntro", "headingHighlight"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextareaField
+                      label="Description"
+                      value={content.servicesIntro.description}
+                      rows={3}
+                      onChange={(value) =>
+                        setValue(["servicesIntro", "description"], value)
+                      }
+                    />
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>FAQ</CardTitle>
-                <CardDescription>
-                  Questions and answers shown in the FAQ section and used for
-                  search-engine and AI rich results.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-6">
-                <div className="flex items-center justify-between gap-3">
-                  <Label>FAQ items</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      addItem(["faq"], {
-                        question: "New question",
-                        answer: "New answer",
-                      })
-                    }
-                  >
-                    <Plus data-icon="inline-start" />
-                    Add question
-                  </Button>
-                </div>
-                {content.faq.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col gap-4 rounded-md border p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="text-sm font-semibold">
-                        Question {index + 1}
+                <Card>
+                  <CardHeader>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <CardTitle>Service cards</CardTitle>
+                        <CardDescription>
+                          Manage services, bullets, icons, and card images.
+                        </CardDescription>
                       </div>
                       <Button
                         type="button"
                         variant="outline"
-                        size="icon"
-                        aria-label={`Remove question ${index + 1}`}
-                        disabled={content.faq.length <= 1}
-                        onClick={() => removeItem(["faq"], index)}
+                        onClick={() =>
+                          addItem(["services"], {
+                            imageKey: "post",
+                            image: blankImage,
+                            iconKey: "sparkles",
+                            title: "NEW SERVICE",
+                            bullets: ["New bullet"],
+                          })
+                        }
                       >
-                        <Trash2 />
+                        <Plus data-icon="inline-start" />
+                        Add service
                       </Button>
                     </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Accordion type="multiple" className="w-full">
+                      {content.services.map((service, serviceIndex) => (
+                        <AccordionItem
+                          key={`service-${serviceIndex}`}
+                          value={`service-${serviceIndex}`}
+                        >
+                          <AccordionTrigger>
+                            {service.title || `Service ${serviceIndex + 1}`}
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+                              <div className="flex flex-col gap-6">
+                                <TextField
+                                  label="Title"
+                                  value={service.title}
+                                  onChange={(value) =>
+                                    setValue(
+                                      ["services", serviceIndex, "title"],
+                                      value,
+                                    )
+                                  }
+                                />
+                                <TwoColumn>
+                                  <SelectField
+                                    label="Icon"
+                                    value={service.iconKey}
+                                    options={serviceIconOptions}
+                                    onChange={(value) =>
+                                      setValue(
+                                        ["services", serviceIndex, "iconKey"],
+                                        value,
+                                      )
+                                    }
+                                  />
+                                  <SelectField
+                                    label="Fallback image"
+                                    value={service.imageKey}
+                                    options={serviceImageOptions}
+                                    onChange={(value) =>
+                                      setValue(
+                                        ["services", serviceIndex, "imageKey"],
+                                        value,
+                                      )
+                                    }
+                                  />
+                                </TwoColumn>
+                                <StringListEditor
+                                  label="Bullets"
+                                  items={service.bullets}
+                                  addLabel="Add bullet"
+                                  onChange={(bulletIndex, value) =>
+                                    setValue(
+                                      [
+                                        "services",
+                                        serviceIndex,
+                                        "bullets",
+                                        bulletIndex,
+                                      ],
+                                      value,
+                                    )
+                                  }
+                                  onAdd={() =>
+                                    addItem(
+                                      ["services", serviceIndex, "bullets"],
+                                      "New bullet",
+                                    )
+                                  }
+                                  onRemove={(bulletIndex) =>
+                                    removeItem(
+                                      ["services", serviceIndex, "bullets"],
+                                      bulletIndex,
+                                    )
+                                  }
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="w-fit"
+                                  disabled={content.services.length <= 1}
+                                  onClick={() =>
+                                    removeItem(["services"], serviceIndex)
+                                  }
+                                >
+                                  <Trash2 data-icon="inline-start" />
+                                  Remove service
+                                </Button>
+                              </div>
+                              <ImagePicker
+                                label="Service image"
+                                fallbackLabel="Uses selected fallback image when empty"
+                                image={service.image}
+                                mediaAssets={mediaAssets}
+                                onChange={(image) =>
+                                  setImage(
+                                    ["services", serviceIndex, "image"],
+                                    image,
+                                  )
+                                }
+                                onMediaChanged={loadMedia}
+                              />
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="why" className="m-0">
+              <div className="grid gap-6 xl:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Why choose section</CardTitle>
+                    <CardDescription>
+                      Section copy, CTA, and reason tiles.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
                     <TextField
-                      label="Question"
-                      value={item.question}
+                      label="Eyebrow"
+                      value={content.whyChoose.eyebrow}
                       onChange={(value) =>
-                        setValue(["faq", index, "question"], value)
+                        setValue(["whyChoose", "eyebrow"], value)
                       }
+                    />
+                    <TwoColumn>
+                      <TextField
+                        label="Heading line 1"
+                        value={content.whyChoose.headingLine1}
+                        onChange={(value) =>
+                          setValue(["whyChoose", "headingLine1"], value)
+                        }
+                      />
+                      <TextField
+                        label="Heading line 2"
+                        value={content.whyChoose.headingLine2}
+                        onChange={(value) =>
+                          setValue(["whyChoose", "headingLine2"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextareaField
+                      label="Description"
+                      value={content.whyChoose.description}
+                      rows={4}
+                      onChange={(value) =>
+                        setValue(["whyChoose", "description"], value)
+                      }
+                    />
+                    <CtaFields
+                      label="CTA"
+                      cta={content.whyChoose.cta}
+                      onChange={(field, value) =>
+                        setValue(["whyChoose", "cta", field], value)
+                      }
+                    />
+                    <ReasonListEditor
+                      items={content.whyChoose.items}
+                      onChange={(index, field, value) =>
+                        setValue(["whyChoose", "items", index, field], value)
+                      }
+                      onAdd={() =>
+                        addItem(["whyChoose", "items"], {
+                          iconKey: "shield",
+                          label: "New reason",
+                        })
+                      }
+                      onRemove={(index) =>
+                        removeItem(["whyChoose", "items"], index)
+                      }
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Mission section</CardTitle>
+                    <CardDescription>
+                      Mission headline, quote, and focus statement.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <TwoColumn>
+                      <TextField
+                        label="Heading line 1"
+                        value={content.mission.headingLine1}
+                        onChange={(value) =>
+                          setValue(["mission", "headingLine1"], value)
+                        }
+                      />
+                      <TextField
+                        label="Heading line 2"
+                        value={content.mission.headingLine2}
+                        onChange={(value) =>
+                          setValue(["mission", "headingLine2"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextareaField
+                      label="Description"
+                      value={content.mission.description}
+                      rows={4}
+                      onChange={(value) =>
+                        setValue(["mission", "description"], value)
+                      }
+                    />
+                    <TextField
+                      label="Quote lead"
+                      value={content.mission.quoteLead}
+                      onChange={(value) =>
+                        setValue(["mission", "quoteLead"], value)
+                      }
+                    />
+                    <TextField
+                      label="Quote emphasis"
+                      value={content.mission.quoteEmphasis}
+                      onChange={(value) =>
+                        setValue(["mission", "quoteEmphasis"], value)
+                      }
+                    />
+                    <TwoColumn>
+                      <TextField
+                        label="Focus label line 1"
+                        value={content.mission.focusLabelLine1}
+                        onChange={(value) =>
+                          setValue(["mission", "focusLabelLine1"], value)
+                        }
+                      />
+                      <TextField
+                        label="Focus label line 2"
+                        value={content.mission.focusLabelLine2}
+                        onChange={(value) =>
+                          setValue(["mission", "focusLabelLine2"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextareaField
+                      label="Focus text"
+                      value={content.mission.focusText}
+                      rows={4}
+                      onChange={(value) =>
+                        setValue(["mission", "focusText"], value)
+                      }
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="projects" className="m-0">
+              <div className="flex flex-col gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Projects section</CardTitle>
+                    <CardDescription>
+                      Project copy, CTA, service area, and taxonomy.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <TwoColumn>
+                      <TextField
+                        label="Heading prefix"
+                        value={content.projects.headingPrefix}
+                        onChange={(value) =>
+                          setValue(["projects", "headingPrefix"], value)
+                        }
+                      />
+                      <TextField
+                        label="Highlighted heading"
+                        value={content.projects.headingHighlight}
+                        onChange={(value) =>
+                          setValue(["projects", "headingHighlight"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextareaField
+                      label="Description"
+                      value={content.projects.description}
+                      rows={4}
+                      onChange={(value) =>
+                        setValue(["projects", "description"], value)
+                      }
+                    />
+                    <CtaFields
+                      label="CTA"
+                      cta={content.projects.cta}
+                      onChange={(field, value) =>
+                        setValue(["projects", "cta", field], value)
+                      }
+                    />
+                    <TextField
+                      label="Service area label"
+                      value={content.projects.serviceAreaLabel}
+                      onChange={(value) =>
+                        setValue(["projects", "serviceAreaLabel"], value)
+                      }
+                    />
+                    <TwoColumn>
+                      <StringListEditor
+                        label="Project types"
+                        items={content.projects.projectTypes}
+                        addLabel="Add type"
+                        onChange={(index, value) =>
+                          setValue(["projects", "projectTypes", index], value)
+                        }
+                        onAdd={() =>
+                          addItem(
+                            ["projects", "projectTypes"],
+                            "New project type",
+                          )
+                        }
+                        onRemove={(index) =>
+                          removeItem(["projects", "projectTypes"], index)
+                        }
+                      />
+                      <StringListEditor
+                        label="Cities"
+                        items={content.projects.cities}
+                        addLabel="Add city"
+                        onChange={(index, value) =>
+                          setValue(["projects", "cities", index], value)
+                        }
+                        onAdd={() =>
+                          addItem(["projects", "cities"], "New city")
+                        }
+                        onRemove={(index) =>
+                          removeItem(["projects", "cities"], index)
+                        }
+                      />
+                    </TwoColumn>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <CardTitle>Project gallery</CardTitle>
+                        <CardDescription>
+                          The first four projects appear on the landing page.
+                        </CardDescription>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          addItem(["projects", "items"], createBlankProject())
+                        }
+                      >
+                        <Plus data-icon="inline-start" />
+                        Add project
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Accordion type="multiple" className="w-full">
+                      {content.projects.items.map((project, projectIndex) => (
+                        <AccordionItem
+                          key={project.id}
+                          value={`project-${projectIndex}`}
+                        >
+                          <AccordionTrigger>
+                            {projectIndex < 4
+                              ? `${project.title} - Featured`
+                              : project.title}
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="flex flex-col gap-6">
+                              <div className="grid gap-5 xl:grid-cols-2">
+                                <div className="flex flex-col gap-6">
+                                  <TextField
+                                    label="Project title"
+                                    value={project.title}
+                                    onChange={(value) =>
+                                      setValue(
+                                        [
+                                          "projects",
+                                          "items",
+                                          projectIndex,
+                                          "title",
+                                        ],
+                                        value,
+                                      )
+                                    }
+                                  />
+                                  <TwoColumn>
+                                    <TextField
+                                      label="Category"
+                                      value={project.category}
+                                      onChange={(value) =>
+                                        setValue(
+                                          [
+                                            "projects",
+                                            "items",
+                                            projectIndex,
+                                            "category",
+                                          ],
+                                          value,
+                                        )
+                                      }
+                                    />
+                                    <TextField
+                                      label="Location"
+                                      value={project.location}
+                                      onChange={(value) =>
+                                        setValue(
+                                          [
+                                            "projects",
+                                            "items",
+                                            projectIndex,
+                                            "location",
+                                          ],
+                                          value,
+                                        )
+                                      }
+                                    />
+                                  </TwoColumn>
+                                  <TextareaField
+                                    label="Summary"
+                                    value={project.summary}
+                                    rows={4}
+                                    onChange={(value) =>
+                                      setValue(
+                                        [
+                                          "projects",
+                                          "items",
+                                          projectIndex,
+                                          "summary",
+                                        ],
+                                        value,
+                                      )
+                                    }
+                                  />
+                                  <div className="flex flex-wrap gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={projectIndex === 0}
+                                      onClick={() =>
+                                        moveItem(
+                                          ["projects", "items"],
+                                          projectIndex,
+                                          -1,
+                                        )
+                                      }
+                                    >
+                                      <ArrowUp data-icon="inline-start" />
+                                      Move up
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={
+                                        projectIndex ===
+                                        content.projects.items.length - 1
+                                      }
+                                      onClick={() =>
+                                        moveItem(
+                                          ["projects", "items"],
+                                          projectIndex,
+                                          1,
+                                        )
+                                      }
+                                    >
+                                      <ArrowDown data-icon="inline-start" />
+                                      Move down
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      disabled={
+                                        content.projects.items.length <= 4
+                                      }
+                                      onClick={() =>
+                                        removeItem(
+                                          ["projects", "items"],
+                                          projectIndex,
+                                        )
+                                      }
+                                    >
+                                      <Trash2 data-icon="inline-start" />
+                                      Remove
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className="rounded-md border bg-secondary p-4 text-sm text-muted-foreground">
+                                  {projectIndex < 4
+                                    ? "This project is visible on the landing page. The landing card uses the after photo only."
+                                    : "This project is visible in View all projects. Move it into the first four positions to feature it on the landing page."}
+                                </div>
+                              </div>
+                              <div className="grid gap-4 lg:grid-cols-2">
+                                <ImagePicker
+                                  label="Before photo"
+                                  fallbackLabel="Shown in project viewer and all-projects gallery"
+                                  image={project.beforeImage}
+                                  mediaAssets={mediaAssets}
+                                  onChange={(image) =>
+                                    setImage(
+                                      [
+                                        "projects",
+                                        "items",
+                                        projectIndex,
+                                        "beforeImage",
+                                      ],
+                                      image,
+                                    )
+                                  }
+                                  onMediaChanged={loadMedia}
+                                />
+                                <ImagePicker
+                                  label="After photo"
+                                  fallbackLabel="Shown on the landing page for featured projects"
+                                  image={project.afterImage}
+                                  mediaAssets={mediaAssets}
+                                  onChange={(image) =>
+                                    setImage(
+                                      [
+                                        "projects",
+                                        "items",
+                                        projectIndex,
+                                        "afterImage",
+                                      ],
+                                      image,
+                                    )
+                                  }
+                                  onMediaChanged={loadMedia}
+                                />
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="footer" className="m-0">
+              <div className="grid gap-6 xl:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Quote CTA</CardTitle>
+                    <CardDescription>
+                      Gold quote band above the footer.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <TextField
+                      label="Title"
+                      value={content.quote.title}
+                      onChange={(value) => setValue(["quote", "title"], value)}
                     />
                     <TextareaField
-                      label="Answer"
-                      value={item.answer}
+                      label="Description"
+                      value={content.quote.description}
+                      rows={4}
                       onChange={(value) =>
-                        setValue(["faq", index, "answer"], value)
+                        setValue(["quote", "description"], value)
                       }
                     />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                    <CtaFields
+                      label="CTA"
+                      cta={content.quote.cta}
+                      onChange={(field, value) =>
+                        setValue(["quote", "cta", field], value)
+                      }
+                    />
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Integrations</CardTitle>
-                <CardDescription>
-                  Paste your Google Place ID to show Google reviews on the site.
-                  The reviews section appears automatically once this is set and
-                  the GOOGLE_PLACES_API_KEY environment variable is configured.
-                  Find your Place ID at
-                  developers.google.com/maps/documentation/places/web-service/place-id.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TextField
-                  label="Google Place ID"
-                  value={content.integrations.googlePlaceId}
-                  onChange={(value) =>
-                    setValue(["integrations", "googlePlaceId"], value)
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Footer and contact</CardTitle>
+                    <CardDescription>
+                      Footer copy, contact details, and social links.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <TextareaField
+                      label="Description"
+                      value={content.footer.description}
+                      rows={3}
+                      onChange={(value) =>
+                        setValue(["footer", "description"], value)
+                      }
+                    />
+                    <TwoColumn>
+                      <TextField
+                        label="Quick links title"
+                        value={content.footer.quickLinksTitle}
+                        onChange={(value) =>
+                          setValue(["footer", "quickLinksTitle"], value)
+                        }
+                      />
+                      <TextField
+                        label="Services title"
+                        value={content.footer.servicesTitle}
+                        onChange={(value) =>
+                          setValue(["footer", "servicesTitle"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextField
+                      label="Contact title"
+                      value={content.footer.contactTitle}
+                      onChange={(value) =>
+                        setValue(["footer", "contactTitle"], value)
+                      }
+                    />
+                    <TwoColumn>
+                      <TextField
+                        label="Email"
+                        value={content.footer.email}
+                        onChange={(value) =>
+                          setValue(["footer", "email"], value)
+                        }
+                      />
+                      <TextField
+                        label="Phone"
+                        value={content.footer.phone}
+                        onChange={(value) =>
+                          setValue(["footer", "phone"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TwoColumn>
+                      <TextField
+                        label="Location"
+                        value={content.footer.location}
+                        onChange={(value) =>
+                          setValue(["footer", "location"], value)
+                        }
+                      />
+                      <TextField
+                        label="Website"
+                        value={content.footer.website}
+                        onChange={(value) =>
+                          setValue(["footer", "website"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextField
+                      label="Copyright"
+                      value={content.footer.copyright}
+                      onChange={(value) =>
+                        setValue(["footer", "copyright"], value)
+                      }
+                    />
+                    <Separator />
+                    <TwoColumn>
+                      <TextField
+                        label="Facebook URL"
+                        value={content.footer.socialLinks.facebook}
+                        onChange={(value) =>
+                          setValue(["footer", "socialLinks", "facebook"], value)
+                        }
+                      />
+                      <TextField
+                        label="LinkedIn URL"
+                        value={content.footer.socialLinks.linkedin}
+                        onChange={(value) =>
+                          setValue(["footer", "socialLinks", "linkedin"], value)
+                        }
+                      />
+                    </TwoColumn>
+                    <TextField
+                      label="Instagram URL"
+                      value={content.footer.socialLinks.instagram}
+                      onChange={(value) =>
+                        setValue(["footer", "socialLinks", "instagram"], value)
+                      }
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>FAQ</CardTitle>
+                    <CardDescription>
+                      Questions and answers shown in the FAQ section and used
+                      for search-engine and AI rich results.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <Label>FAQ items</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          addItem(["faq"], {
+                            question: "New question",
+                            answer: "New answer",
+                          })
+                        }
+                      >
+                        <Plus data-icon="inline-start" />
+                        Add question
+                      </Button>
+                    </div>
+                    {content.faq.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col gap-4 rounded-md border p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="text-sm font-semibold">
+                            Question {index + 1}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            aria-label={`Remove question ${index + 1}`}
+                            disabled={content.faq.length <= 1}
+                            onClick={() => removeItem(["faq"], index)}
+                          >
+                            <Trash2 />
+                          </Button>
+                        </div>
+                        <TextField
+                          label="Question"
+                          value={item.question}
+                          onChange={(value) =>
+                            setValue(["faq", index, "question"], value)
+                          }
+                        />
+                        <TextareaField
+                          label="Answer"
+                          value={item.answer}
+                          onChange={(value) =>
+                            setValue(["faq", index, "answer"], value)
+                          }
+                        />
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Integrations</CardTitle>
+                    <CardDescription>
+                      Paste your Google Place ID to show Google reviews on the
+                      site. The reviews section appears automatically once this
+                      is set and the GOOGLE_PLACES_API_KEY environment variable
+                      is configured. Find your Place ID at
+                      developers.google.com/maps/documentation/places/web-service/place-id.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <TextField
+                      label="Google Place ID"
+                      value={content.integrations.googlePlaceId}
+                      onChange={(value) =>
+                        setValue(["integrations", "googlePlaceId"], value)
+                      }
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="media" className="m-0">
+              <MediaLibrary
+                assets={mediaAssets}
+                isLoading={isLoadingMedia}
+                onRefresh={loadMedia}
+                onDeleted={loadMedia}
+              />
+            </TabsContent>
+          </Tabs>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database data-icon="inline-start" />
+                CMS record
+              </CardTitle>
+              <CardDescription>
+                Current source and database metadata.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+                <MetadataItem label="Slug" value={record.slug} />
+                <MetadataItem label="Source" value={record.source} />
+                <MetadataItem
+                  label="Updated"
+                  value={
+                    record.updatedAt
+                      ? new Intl.DateTimeFormat(undefined, {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        }).format(new Date(record.updatedAt))
+                      : "Not saved yet"
                   }
                 />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="media" className="m-0">
-          <MediaLibrary
-            assets={mediaAssets}
-            isLoading={isLoadingMedia}
-            onRefresh={loadMedia}
-            onDeleted={loadMedia}
-          />
-        </TabsContent>
-      </Tabs>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database data-icon="inline-start" />
-            CMS record
-          </CardTitle>
-          <CardDescription>
-            Current source and database metadata.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
-            <MetadataItem label="Slug" value={record.slug} />
-            <MetadataItem label="Source" value={record.source} />
-            <MetadataItem
-              label="Updated"
-              value={
-                record.updatedAt
-                  ? new Intl.DateTimeFormat(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }).format(new Date(record.updatedAt))
-                  : "Not saved yet"
-              }
-            />
-            <MetadataItem
-              label="Updated by"
-              value={record.updatedBy ?? "None"}
-            />
-          </dl>
-        </CardContent>
-        <CardFooter className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-muted-foreground">
-            Saved changes revalidate the public landing page.
-          </p>
-          <Button type="button" onClick={saveContent} disabled={isSaving}>
-            <Save data-icon="inline-start" />
-            {isSaving ? "Saving..." : "Save changes"}
-          </Button>
-        </CardFooter>
-      </Card>
+                <MetadataItem
+                  label="Updated by"
+                  value={record.updatedBy ?? "None"}
+                />
+              </dl>
+            </CardContent>
+            <CardFooter className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">
+                Saved changes revalidate the public landing page.
+              </p>
+              <Button type="button" onClick={saveContent} disabled={isSaving}>
+                <Save data-icon="inline-start" />
+                {isSaving ? "Saving..." : "Save changes"}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+        {showPreview ? (
+          <PreviewPane content={content} isDirty={isDirty} />
+        ) : null}
+      </div>
     </div>
+  );
+}
+
+const PREVIEW_LOGICAL_WIDTHS = {
+  desktop: 1280,
+  mobile: 390,
+} as const;
+
+type PreviewDevice = keyof typeof PREVIEW_LOGICAL_WIDTHS;
+
+function PreviewPane({
+  content,
+  isDirty,
+}: {
+  content: LandingPageContent;
+  isDirty: boolean;
+}) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [device, setDevice] = useState<PreviewDevice>("desktop");
+  const [isReady, setIsReady] = useState(false);
+  const [stage, setStage] = useState({ width: 0, height: 0 });
+
+  // Track the available stage size so the desktop layout can be scaled to fit.
+  useEffect(() => {
+    const element = stageRef.current;
+
+    if (!element || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const rect = entries[0]?.contentRect;
+
+      if (rect) {
+        setStage({ width: rect.width, height: rect.height });
+      }
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  // The iframe posts a "ready" handshake once it has mounted its listener.
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if ((event.data as { type?: unknown })?.type === PREVIEW_READY_TYPE) {
+        setIsReady(true);
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  // Push the current (unsaved) content into the iframe, debounced so rapid
+  // typing does not flood it. Re-runs whenever content changes or on ready.
+  useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: PREVIEW_MESSAGE_TYPE, content },
+        window.location.origin,
+      );
+    }, 250);
+
+    return () => window.clearTimeout(timeout);
+  }, [content, isReady]);
+
+  const logicalWidth = PREVIEW_LOGICAL_WIDTHS[device];
+  const scale = stage.width > 0 ? Math.min(1, stage.width / logicalWidth) : 1;
+  const scaledWidth = logicalWidth * scale;
+  const leftOffset = Math.max(0, (stage.width - scaledWidth) / 2);
+
+  return (
+    <Card className="flex flex-col xl:sticky xl:top-6 xl:h-[calc(100vh-7rem)] xl:w-[46%] xl:max-w-[760px] xl:shrink-0">
+      <CardHeader>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Eye data-icon="inline-start" />
+              Live preview
+            </CardTitle>
+            <CardDescription>
+              {isDirty
+                ? "Showing your unsaved edits. Publish with Save changes."
+                : "Matches the published site."}
+            </CardDescription>
+          </div>
+          <div className="flex shrink-0 gap-1 rounded-md border p-1">
+            <Button
+              type="button"
+              size="sm"
+              variant={device === "desktop" ? "secondary" : "ghost"}
+              aria-pressed={device === "desktop"}
+              onClick={() => setDevice("desktop")}
+            >
+              <Monitor data-icon="inline-start" />
+              Desktop
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={device === "mobile" ? "secondary" : "ghost"}
+              aria-pressed={device === "mobile"}
+              onClick={() => setDevice("mobile")}
+            >
+              <Smartphone data-icon="inline-start" />
+              Mobile
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="min-h-[480px] flex-1 p-0">
+        <div
+          ref={stageRef}
+          className="relative h-full w-full overflow-hidden rounded-b-md bg-secondary"
+        >
+          <iframe
+            ref={iframeRef}
+            src="/admin/landing-page-preview"
+            title="Landing page preview"
+            className="absolute top-0 border-0 bg-background"
+            style={{
+              width: logicalWidth,
+              height: stage.height > 0 ? stage.height / scale : "100%",
+              left: leftOffset,
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+            }}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
